@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+﻿import { createRouter, createWebHistory } from "vue-router";
 
 import CustomerLayout from "@/layouts/CustomerLayout.vue";
 import BlankLayout from "@/layouts/BlankLayout.vue";
@@ -33,7 +33,7 @@ const router = createRouter({
           name: "home",
           component: () => import("@/views/customer/HomeView.vue"),
           meta: {
-            breadcrumb: "Trang chủ",
+            breadcrumb: "Trang chá»§",
           },
         },
         {
@@ -43,7 +43,7 @@ const router = createRouter({
           component: () => import("@/views/customer/BookView.vue"),
           meta: {
             requiresAuth: true,
-            breadcrumb: "Danh Sách Sách",
+            breadcrumb: "Danh SaÌch SÃ¡ch",
           },
         },
         {
@@ -52,7 +52,31 @@ const router = createRouter({
           component: () => import("@/views/customer/BookDetailView.vue"),
           meta: {
             requiresAuth: true,
-            breadcrumb: "Chi tiết sách",
+            breadcrumb: "Chi tiáº¿t sÃ¡ch",
+          },
+        },
+        {
+          path: "carts",
+          name: "carts",
+          component: () => import("@/views/customer/CartView.vue"),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "checkout",
+          name: "checkout",
+          component: () => import("@/views/customer/CheckoutView.vue"),
+          meta: {
+            requiresAuth: true,
+          },
+        },
+        {
+          path: "order-history",
+          name: "order-history",
+          component: () => import("@/views/customer/OrderHistoryView.vue"),
+          meta: {
+            requiresAuth: true,
           },
         },
       ],
@@ -95,7 +119,7 @@ router.beforeEach(async (to) => {
   const authStore = useAuthStore();
   const token = localStorage.getItem("token");
 
-  // Có token nhưng chưa có thông tin user
+  // CÃ³ token nhÆ°ng chÆ°a cÃ³ thÃ´ng tin user
   if (token && !authStore.userInfo) {
     await authStore.getUserProfile();
   }

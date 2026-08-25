@@ -3,6 +3,7 @@ import authService from "@/services/auth.service";
 import userService from "@/services/user.service";
 import { defineStore } from "pinia";
 import { useToast } from "vue-toastification";
+import { useCartStore } from "./cart.store";
 
 const toast = useToast();
 
@@ -34,11 +35,14 @@ export const useAuthStore = defineStore("auth", {
 
     async login(form) {
       try {
-
         const res = await authService.postLogin(form);
         localStorage.setItem("token", res.data.token);
         toast.success("Đăng nhập thành công.");
+
         await this.getUserProfile();
+
+        const cartStore = useCartStore();
+        await cartStore.fetchCart();
         //router.push("/home");
         if (this.isAdmin) {
           router.push({ name: "dashboard" });
@@ -60,7 +64,7 @@ export const useAuthStore = defineStore("auth", {
         router.push("/home");
       } catch (error) {
         toast.error("Đăng Xuất lỗi.");
-      } 
+      }
     },
   },
 });

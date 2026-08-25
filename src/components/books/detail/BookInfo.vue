@@ -1,15 +1,15 @@
 <template>
     <v-card class="pa-4 rounded-lg" elevation="1">
-        <h2 class="ma-0">{{ book.name }}</h2>
+        <h2 class="ma-0">{{ props.book.name }}</h2>
 
         <v-row>
             <v-col cols="12" md="6">
-                <p>Tác giả: <b>{{ book.author }}</b></p>
+                <p>Tác giả: <b>{{ props.book.author }}</b></p>
 
             </v-col>
             <v-col cols="12" md="6">
                 <div class="mt-3">
-                    <v-chip v-for="genre in book.genres" :key="genre.id" size="small" color="primary" variant="tonal"
+                    <v-chip v-for="genre in props.book.genres" :key="genre.id" size="small" color="primary" variant="tonal"
                         class="me-1">
                         {{ genre.name }}
                     </v-chip>
@@ -18,9 +18,9 @@
         </v-row>
 
         <div class="w-60 d-flex align-center ga-3">
-            <v-rating :model-value="book.avgRating" readonly half-increments active-color="warning" density="compact" />
+            <v-rating :model-value="props.book.avgRating" readonly half-increments active-color="warning" density="compact" />
             <p>|</p>
-            <p class="pt-1">Đã bán: {{ book.soldQuantity }} </p>
+            <p class="pt-1">Đã bán: {{ props.book.soldQuantity }} </p>
         </div>
 
 
@@ -28,19 +28,19 @@
 
             <!-- Giá bán -->
             <p class="text-red text-h1 font-weight-bold sell-price">
-                {{ formatPrice(book.sellPrice) }} đ
+                {{ formatPrice(props.book.sellPrice) }} đ
             </p>
 
             <!-- Giá gốc -->
             <span v-if="book.listPrice > book.sellPrice"
                 class="text-body-1 text-grey text-decoration-line-through mb-2">
-                {{ formatPrice(book.listPrice) }} đ
+                {{ formatPrice(props.book.listPrice) }} đ
             </span>
 
             <!-- % giảm -->
             <v-chip v-if="discountPercent(book.listPrice, book.sellPrice) > 0" size="small" color="red-darken-2"
                 variant="flat" rounded="md" class="font-weight-bold mb-2 ma-0">
-                -{{ discountPercent(book.listPrice, book.sellPrice) }}%
+                -{{ discountPercent(props.book.listPrice, props.book.sellPrice) }}%
             </v-chip>
 
         </div>
@@ -50,11 +50,10 @@
 
         <v-divider />
 
-        <!-- <div>
+        <div>
             <p class="mb-2">Số lượng:</p>
 
-            <div class=" d-flex align-center" style="width: 150px">
-
+            <div class="d-flex align-center" style="width: 150px">
                 <v-btn icon="mdi-minus" variant="outlined" size="small" rounded="0" @click="decrease" />
 
                 <v-text-field v-model.number="quantity" type="number" variant="outlined" density="compact" hide-details
@@ -62,16 +61,16 @@
 
                 <v-btn icon="mdi-plus" variant="outlined" size="small" rounded="0" @click="increase" />
             </div>
-        </div> -->
+        </div>
 
         <v-row class="mt-2">
             <v-col cols="6">
-                <app-button class="font-weight-bold w-100" prepend-icon="mdi-cart" variant="outlined" color="warning"
-                    text="THÊM VÀO GIỎ" />
+                <app-button class="font-weight-bold w-100" prepend-icon="mdi-cart" @click="AddCart" variant="outlined"
+                    color="warning" text="THÊM VÀO GIỎ" />
             </v-col>
 
             <v-col cols="6">
-                <app-button class="font-weight-bold text-red w-100" variant="tonal" text="MUA NGAY" />
+                <app-button class="font-weight-bold text-red w-100" variant="tonal" text="MUA NGAY" @click="BuyNow" />
             </v-col>
         </v-row>
 
@@ -79,14 +78,42 @@
 </template>
 <script setup>
 import AppButton from '@/components/common/AppButton.vue';
+import { ref } from 'vue';
 
 
-defineProps({
+const props = defineProps({
     book: {
         type: Object,
-        required: true,
-    },
+        required: true
+    }
 })
+
+const quantity = ref(1)
+
+const increase = () => {
+    quantity.value++
+}
+
+const decrease = () => {
+    if (quantity.value > 1) {
+        quantity.value--
+    }
+}
+const emit = defineEmits(['them-gio-hang', 'mua-ngay'])
+
+const AddCart = () => {
+    emit('them-gio-hang', {
+        bookId: props.book.id,
+        quantity: quantity.value
+    })
+}
+
+const BuyNow = () => {
+    emit('mua-ngay', {
+        bookId: props.book.id,
+        quantity: quantity.value
+    })
+}
 
 const discountPercent = (listPrice, sellPrice) => {
     if (!listPrice || listPrice <= sellPrice) {

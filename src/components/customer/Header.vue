@@ -40,11 +40,21 @@
 
             <!-- Cart -->
 
-            <v-btn icon variant="text">
+            <!-- <v-btn icon variant="text">
                 <v-icon>
                     mdi-cart-outline
                 </v-icon>
+            </v-btn> -->
+
+            <v-btn icon variant="text" @click="handleCartClick">
+                <v-badge v-if="authStore.isLoggedIn" location="top right" color="primary"
+                    :content="useCart.totalQuantity">
+                    <v-icon icon="mdi-cart-outline" />
+                </v-badge>
+
+                <v-icon v-else icon="mdi-cart-outline" />
             </v-btn>
+
 
             <!-- Login Register -->
 
@@ -76,6 +86,7 @@
                     </v-list-item> -->
 
                     <v-list-item title="Xem hồ sơ" @click="router.push('/profile')" />
+                    <v-list-item title="Lịch Sử Đơn Hàng" @click="router.push('/order-history')" />
                     <v-list-item title="Đăng xuất" @click="authStore.logout()" />
                 </v-list>
 
@@ -89,12 +100,25 @@
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from "vue-router";
 import { watchEffect } from "vue";
+import { useCartStore } from '@/stores/cart.store';
 const router = useRouter()
 const authStore = useAuthStore()
+const useCart = useCartStore()
 
 watchEffect(() => {
     console.log("Header:", authStore.userInfo);
 });
+
+
+const handleCartClick = () => {
+    if (!authStore.isLoggedIn) {
+        // toast (bạn chưa đăng nhập nên chưa có sản phẩm nào)
+        router.push('/auth/login')
+        return
+    }
+
+    router.push('/carts')
+}
 
 </script>
 
