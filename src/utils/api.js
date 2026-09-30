@@ -52,22 +52,60 @@ api.interceptors.response.use(
     console.log(response);
     return response;
   },
-  (error) => {
+  async (error) => {
     const loadingStore = useLoadingStore();
     loadingStore.hide();
     // Handle errors
     if (error.response) {
       switch (error.response.status) {
-        case 401:
-          // Unauthorized - redirect to login
-          if (error.config && !error.config.url.includes("/auth/login")) {
+        case 401: {
+          const originalRequest = error.config;
+          // Bỏ qua nếu là request auth để tránh vòng lặp vô tận
+          const isAuthEndpoint =
+            originalRequest?.url?.includes("/auth/login") ||
+            originalRequest?.url?.includes("/auth/refresh") ||
+            originalRequest?.url?.includes("/auth/register");
+
+          if (originalRequest && !isAuthEndpoint && !originalRequest._retry) {
+            originalRequest._retry = true;
+            const refreshToken = localStorage.getItem("refreshToken");
+
+            if (refreshToken) {
+              try {
+                // Gọi API refresh token riêng biệt không qua interceptor
+                const refreshResponse = await axios.post(
+                  `${import.meta.env.VITE_API_URL}/auth/refresh`,
+                  { refreshToken }
+                );
+
+                const newAccessToken = refreshResponse.data?.data?.token;
+                const newRefreshToken = refreshResponse.data?.data?.refreshToken;
+
+                if (newAccessToken) {
+                  localStorage.setItem("token", newAccessToken);
+                  if (newRefreshToken) {
+                    localStorage.setItem("refreshToken", newRefreshToken);
+                  }
+                  originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+                  return api(originalRequest);
+                }
+              } catch (refreshErr) {
+                console.error("Refresh token thất bại:", refreshErr);
+              }
+            }
+
+            // Nếu không có refreshToken hoặc refresh thất bại:
             localStorage.removeItem("token");
-            window.location.href = "/home";
-            toast.warning(
-              "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
-            );
+            localStorage.removeItem("refreshToken");
+            toast.warning("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+
+            const currentPath = window.location.pathname + window.location.search;
+            if (!window.location.pathname.includes("/auth/login")) {
+              window.location.href = `/auth/login?redirect=${encodeURIComponent(currentPath)}`;
+            }
           }
           break;
+        }
         case 403:
           // Forbidden
           toast.warning("Bạn không có quyền truy cập vào tài nguyên này.");

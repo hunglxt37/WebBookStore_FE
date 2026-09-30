@@ -153,7 +153,7 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.requiresAuth && !token) {
-    return { name: "login" };
+    return { name: "login", query: { redirect: to.fullPath } };
   }
 
   if (to.meta.requiresAdmin && !authStore.isAdmin) {

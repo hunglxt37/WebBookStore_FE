@@ -25,10 +25,10 @@ export const useAuthStore = defineStore("auth", {
       try {
         const res = await userService.getProfile();
         this.userInfo = res.data;
-        console.log(this.userInfo);
       } catch (err) {
-        console.log(err?.response?.data || err);
+        console.error("Lỗi lấy thông tin người dùng:", err?.response?.data || err);
         localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
         this.userInfo = null;
       }
     },
@@ -38,19 +38,32 @@ export const useAuthStore = defineStore("auth", {
         this.loading = true;
         const res = await authService.postLogin(form);
         localStorage.setItem("token", res.data.token);
+        if (res.data.refreshToken) {
+          localStorage.setItem("refreshToken", res.data.refreshToken);
+        }
         toast.success("Đăng nhập thành công.");
 
         await this.getUserProfile();
 
         const cartStore = useCartStore();
         await cartStore.fetchCart();
-        if (this.isAdmin) {
+
+        // Điều hướng thông minh: ưu tiên query redirect nếu có
+        const redirect = router.currentRoute.value.query.redirect;
+        if (redirect) {
+          router.push(redirect);
+        } else if (this.isAdmin) {
           router.push({ name: "dashboard" });
         } else {
           router.push({ name: "home" });
         }
       } catch (err) {
-        toast.error(err?.response?.data?.message || err?.response?.data?.error?.message || "Đăng nhập thất bại.");
+        const serverMsg = err?.response?.data?.error?.message || err?.response?.data?.message;
+        if (serverMsg) {
+          toast.error(serverMsg);
+        } else if (err?.response) {
+          toast.error("Đăng nhập thất bại. Vui lòng thử lại.");
+        }
       } finally {
         this.loading = false;
       }
@@ -72,13 +85,17 @@ export const useAuthStore = defineStore("auth", {
     async logout() {
       const token = localStorage.getItem("token");
       try {
-        await authService.postLogout({ token });
-        localStorage.removeItem("token");
-        this.userInfo = null;
-        toast.success("Đăng Xuất thành công.");
-        router.push("/home");
+        if (token) {
+          await authService.postLogout({ token });
+        }
       } catch (error) {
-        toast.error("Đăng Xuất lỗi.");
+        console.error("Lỗi khi gửi yêu cầu logout:", error);
+      } finally {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
+        this.userInfo = null;
+        toast.success("Đăng xuất thành công.");
+        router.push({ name: "home" });
       }
     },
   },

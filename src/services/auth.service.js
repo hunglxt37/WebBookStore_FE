@@ -16,6 +16,11 @@ const authService = {
     return response.data;
   },
 
+  async refreshToken(refreshToken) {
+    const response = await api.post("/auth/refresh", { refreshToken });
+    return response.data;
+  },
+
   async activateAccount(token) {
     const response = await api.get(`/auth/activate?token=${token}`);
     return response.data;
