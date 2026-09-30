@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <v-container class="py-6 checkout-view">
     <!-- Header -->
     <div class="d-flex align-center mb-5">
@@ -26,12 +26,11 @@
               </v-col>
               <v-col cols="12" sm="6">
                 <AppInput v-model.trim="phone" label="Số điện thoại" type="text" :error-message="errors.phone"
-                  :field-props="fullNameProps" />
+                  :field-props="phoneProps" />
               </v-col>
               <v-col cols="12">
                 <v-textarea v-model.trim="deliveryAddress" label="Địa chỉ giao hàng" v-bind="deliveryAddressProps"
-                  :error-messages="errors.deliveryAddress"  variant="outlined"
-                  density="comfortable" rows="2"/>
+                  :error-messages="errors.deliveryAddress" variant="outlined" density="comfortable" rows="2" />
               </v-col>
             </v-row>
 
@@ -43,7 +42,7 @@
 
             <v-radio-group v-model="deliveryId" v-bind="deliveryIdProps" :error-messages="errors.deliveryId"
               hide-details="auto">
-              
+
               <v-card v-for="delivery in deliveries" :key="delivery.id" variant="outlined" class="mb-2">
                 <v-radio :value="delivery.id" class="px-3 py-2">
                   <template #label>
@@ -143,7 +142,7 @@
             </div>
 
             <v-btn type="submit" block size="large" color="red" class="font-weight-bold" :loading="submitting"
-              :disabled="!cartStore.selectedItems.length || !deliveries.length || !payments.length">
+              :disabled="submitting || !cartStore.selectedItems.length || !deliveries.length || !payments.length">
               ĐẶT HÀNG
             </v-btn>
           </v-card>
@@ -161,12 +160,14 @@ import { useToast } from 'vue-toastification'
 import api from '@/utils/api'
 import userService from '@/services/user.service'
 import { useCartStore } from '@/stores/cart.store'
+import { useOrderStore } from '@/stores/order.store'
 import { checkoutSchema } from '@/schemas/checkout.schema'
 import AppInput from '@/components/common/AppInput.vue'
 
 const router = useRouter()
 const toast = useToast()
 const cartStore = useCartStore()
+const orderStore = useOrderStore()
 
 const deliveries = ref([])
 const payments = ref([])
@@ -204,7 +205,11 @@ onMounted(async () => {
       api.get('/payments')
     ])
     const profile = profileResponse.data || profileResponse
-    setValues({ fullName: profile.fullName || profile.name || '', phone: profile.phone || '' })
+    setValues({
+      fullName: profile.fullName || profile.name || '',
+      phone: profile.phone || '',
+      deliveryAddress: profile.shippingAddress || profile.billingAddress || ''
+    })
     deliveries.value = deliveriesResponse.data?.data || []
     payments.value = paymentsResponse.data?.data || []
     deliveryId.value = deliveries.value[0]?.id ?? null
@@ -221,7 +226,7 @@ const placeOrder = handleSubmit(async (values) => {
   if (!cartStore.selectedItems.length) return toast.warning('Vui lòng chọn ít nhất một sản phẩm.')
   submitting.value = true
   try {
-    await api.post('/orders', {
+    await orderStore.createOrder({
       fullName: values.fullName,
       phone: values.phone,
       deliveryAddress: values.deliveryAddress,
@@ -230,10 +235,9 @@ const placeOrder = handleSubmit(async (values) => {
       deliveryId: values.deliveryId,
       cartItemIds: cartStore.selectedItems.map((item) => item.id)
     })
-    cartStore.items = cartStore.items.filter((item) => !cartStore.selectedItemIds.includes(item.id))
-    cartStore.selectedItemIds = []
+    await cartStore.fetchCart()
     toast.success('Đặt hàng thành công!')
-    router.push('/home')
+    router.push('/order-history')
   } catch (error) {
     toast.error(error.response?.data?.message || 'Đặt hàng thất bại. Vui lòng thử lại.')
   } finally {

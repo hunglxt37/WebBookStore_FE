@@ -51,26 +51,38 @@
         <v-divider />
 
         <div>
-            <p class="mb-2">Số lượng:</p>
+            <div class="d-flex align-center justify-space-between mb-2">
+                <span class="font-weight-medium">Số lượng:</span>
+                <span class="text-caption font-weight-medium"
+                    :class="props.book.status === 'INACTIVE' ? 'text-grey' : props.book.quantity > 0 ? 'text-success' : 'text-error'">
+                    {{ props.book.status === 'INACTIVE' ? 'Tạm ngưng kinh doanh' : props.book.quantity > 0 ? `Còn ${props.book.quantity} cuốn trong kho` : 'Tạm hết hàng' }}
+                </span>
+            </div>
 
             <div class="d-flex align-center" style="width: 150px">
-                <v-btn icon="mdi-minus" variant="outlined" size="small" rounded="0" @click="decrease" />
+                <v-btn icon="mdi-minus" variant="outlined" size="small" rounded="0"
+                    :disabled="quantity <= 1 || props.book.quantity <= 0"
+                    @click="decrease" />
 
                 <v-text-field v-model.number="quantity" type="number" variant="outlined" density="compact" hide-details
                     single-line class="quantity-input" />
 
-                <v-btn icon="mdi-plus" variant="outlined" size="small" rounded="0" @click="increase" />
+                <v-btn icon="mdi-plus" variant="outlined" size="small" rounded="0"
+                    :disabled="props.book.quantity !== undefined && quantity >= props.book.quantity"
+                    @click="increase" />
             </div>
         </div>
 
-        <v-row class="mt-2">
+        <v-row class="mt-4">
             <v-col cols="6">
                 <app-button class="font-weight-bold w-100" prepend-icon="mdi-cart" @click="AddCart" variant="outlined"
-                    color="warning" text="THÊM VÀO GIỎ" />
+                    color="warning" text="THÊM VÀO GIỎ"
+                    :disabled="props.book.quantity <= 0 || props.book.status === 'INACTIVE'" />
             </v-col>
 
             <v-col cols="6">
-                <app-button class="font-weight-bold text-red w-100" variant="tonal" text="MUA NGAY" @click="BuyNow" />
+                <app-button class="font-weight-bold text-red w-100" variant="tonal" text="MUA NGAY" @click="BuyNow"
+                    :disabled="props.book.quantity <= 0 || props.book.status === 'INACTIVE'" />
             </v-col>
         </v-row>
 

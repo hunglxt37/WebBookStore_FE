@@ -57,9 +57,16 @@
                             variant="outlined" />
                     </v-col>
 
-                    <v-col cols="12" md="6">
+                    <v-col cols="12" :md="mode === 'update' ? 6 : 12">
                         <v-select v-model="form.genreIds" :items="genres" item-title="name" item-value="id"
                             label="Thể loại" multiple chips closable-chips variant="outlined" />
+                    </v-col>
+
+                    <v-col cols="12" md="6" v-if="mode === 'update'">
+                        <v-select v-model="form.status" :items="[
+                            { title: 'Đang bán (ACTIVE)', value: 'ACTIVE' },
+                            { title: 'Tạm ngưng (INACTIVE)', value: 'INACTIVE' }
+                        ]" label="Trạng thái kinh doanh" variant="outlined" />
                     </v-col>
                 </v-row>
 
@@ -177,6 +184,9 @@ const handleSave = () => {
     payload.append('sellPrice', form.sellPrice ?? '');
     payload.append('quantity', form.quantity ?? '');
     payload.append('discountPercent', form.discountPercent ?? '');
+    if (form.status) {
+        payload.append('status', form.status);
+    }
 
     // ── Mảng thể loại: phải append từng phần tử riêng lẻ ──
     // Spring Boot đọc: @RequestParam List<Long> genreIds
@@ -210,6 +220,7 @@ const form = reactive({
     sellPrice: null,
     quantity: null,
     discountPercent: null,
+    status: "ACTIVE",
 
     // Có thể chọn nhiều genre
     genreIds: [],
@@ -359,6 +370,7 @@ watch(
             quantity: book.quantity ?? null,
 
             discountPercent: book.discountPercent ?? null,
+            status: book.status ?? "ACTIVE",
 
             // Hỗ trợ cả mảng chuỗi (từ Table) và mảng Object {id, name} (từ Chi tiết)
             genreIds: book.genreIds || (book.genres ? book.genres.map(g => {

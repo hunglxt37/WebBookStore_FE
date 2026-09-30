@@ -85,6 +85,7 @@
                         {{ authStore.fullName }}
                     </v-list-item> -->
 
+                    
                     <v-list-item title="Xem hồ sơ" @click="router.push('/profile')" />
                     <v-list-item title="Lịch Sử Đơn Hàng" @click="router.push('/order-history')" />
                     <v-list-item title="Đăng xuất" @click="authStore.logout()" />

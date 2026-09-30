@@ -61,7 +61,24 @@
 
                 <!-- Giá -->
                 <template v-slot:item.sellPrice="{ item }">
-                    <p class="text-error font-weight-bold">{{ item.sellPrice?.toLocaleString('vi-VN') }} ₫</p>
+                    <p class="text-error font-weight-bold mb-0">{{ item.sellPrice?.toLocaleString('vi-VN') }} ₫</p>
+                    <small v-if="item.listPrice && item.listPrice > item.sellPrice" class="text-grey text-decoration-line-through">
+                        {{ item.listPrice?.toLocaleString('vi-VN') }} ₫
+                    </small>
+                </template>
+
+                <!-- Tồn kho -->
+                <template v-slot:item.quantity="{ item }">
+                    <v-chip :color="item.quantity > 10 ? 'success' : item.quantity > 0 ? 'warning' : 'error'" size="small" variant="tonal">
+                        {{ item.quantity ?? 0 }}
+                    </v-chip>
+                </template>
+
+                <!-- Trạng thái -->
+                <template v-slot:item.status="{ item }">
+                    <v-chip :color="item.status === 'ACTIVE' ? 'success' : 'grey'" size="small" variant="flat">
+                        {{ item.status === 'ACTIVE' ? 'Đang bán' : 'Tạm ngưng' }}
+                    </v-chip>
                 </template>
 
                 <!-- Hành động -->
@@ -112,7 +129,9 @@ const headers = [
     { title: 'Hình ảnh', key: 'thumbnailUrl', sortable: false, align: 'center' },
     { title: 'Tên sách và tác giả', key: 'name', sortable: true, align: 'start' },
     { title: 'Thể loại', key: 'genres', sortable: false, align: 'start' },
-    { title: 'Giá', key: 'sellPrice', sortable: true, align: 'end' },
+    { title: 'Giá bán', key: 'sellPrice', sortable: true, align: 'end' },
+    { title: 'Tồn kho', key: 'quantity', sortable: true, align: 'center' },
+    { title: 'Trạng thái', key: 'status', sortable: false, align: 'center' },
     { title: 'Hành động', key: 'actions', sortable: false, align: 'center' }
 ]
 

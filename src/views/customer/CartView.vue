@@ -50,10 +50,16 @@
                                         Tác giả:
                                         {{ item.author }}
                                     </div> -->
-                                    <div class="mt-2">
+                                    <div class="mt-2 d-flex align-center ga-2">
                                         <span class="text-red font-weight-bold">
                                             Giá: {{ formatPrice(item.sellPrice) }} đ
                                         </span>
+                                        <span v-if="item.listPrice && item.listPrice > item.sellPrice" class="text-caption text-grey text-decoration-line-through">
+                                            {{ formatPrice(item.listPrice) }} đ
+                                        </span>
+                                    </div>
+                                    <div v-if="item.stockQuantity !== undefined" class="text-caption text-grey mt-1">
+                                        Còn lại: {{ item.stockQuantity }} cuốn trong kho
                                     </div>
                                 </div>
                             </div>
@@ -71,6 +77,7 @@
                                     density="compact" hide-details single-line class="quantity-input" />
 
                                 <v-btn icon="mdi-plus" variant="outlined" size="small" rounded="0"
+                                    :disabled="item.stockQuantity !== undefined && item.quantity >= item.stockQuantity"
                                     @click="increase(item)" />
 
                             </div>

@@ -35,22 +35,37 @@ export const useAuthStore = defineStore("auth", {
 
     async login(form) {
       try {
+        this.loading = true;
         const res = await authService.postLogin(form);
         localStorage.setItem("token", res.data.token);
-        toast.success("Đăng nhập thành công.");
+        toast.success("Đăng nhập thành công.");
 
         await this.getUserProfile();
 
         const cartStore = useCartStore();
         await cartStore.fetchCart();
-        //router.push("/home");
         if (this.isAdmin) {
           router.push({ name: "dashboard" });
         } else {
           router.push({ name: "home" });
         }
       } catch (err) {
-        toast.error(err.response.data.error.message);
+        toast.error(err?.response?.data?.message || err?.response?.data?.error?.message || "Đăng nhập thất bại.");
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async register(form) {
+      try {
+        this.loading = true;
+        await authService.postRegister(form);
+        toast.success("Đăng ký tài khoản thành công! Vui lòng kiểm tra email kích hoạt tài khoản hoặc đăng nhập.");
+        router.push({ name: "login" });
+      } catch (err) {
+        toast.error(err?.response?.data?.message || err?.response?.data?.error?.message || "Đăng ký thất bại.");
+      } finally {
+        this.loading = false;
       }
     },
 

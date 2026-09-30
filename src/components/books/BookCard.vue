@@ -1,25 +1,37 @@
 <template>
     <v-card class="book-card rounded-lg" elevation="2" hover>
-        <v-img :src="book.thumbnailUrl" height="220" cover>
+        <v-img :src="book.thumbnailUrl" height="220" cover class="position-relative">
             <template #error>
                 <v-img src="https://www.freeiconspng.com/thumbs/no-image-icon/no-image-icon-6.png" height="220" cover />
             </template>
+            <v-chip v-if="book.discountPercent && book.discountPercent > 0"
+                color="red"
+                size="x-small"
+                class="position-absolute font-weight-bold ma-2"
+                style="top: 0; left: 0; z-index: 2;">
+                -{{ book.discountPercent }}%
+            </v-chip>
         </v-img>
 
         <v-card-text class="pa-4">
 
-            <h3 class="text-no-wrap">{{ book.name }}</h3>
-            <div class="book-author">{{ book.author }}</div>
+            <h3 class="text-no-wrap text-truncate" :title="book.name">{{ book.name }}</h3>
+            <div class="book-author text-caption text-grey">{{ book.author }}</div>
 
-            <div class="d-flex justify-space-between align-center">
-                <div class="mt-3 text-red font-weight-bold">
-                    {{ formatPrice(book.sellPrice) }} đ
+            <div class="d-flex justify-space-between align-center mt-2">
+                <div>
+                    <div class="text-red font-weight-bold text-subtitle-1">
+                        {{ formatPrice(book.sellPrice) }} đ
+                    </div>
+                    <div v-if="book.listPrice && book.listPrice > book.sellPrice" class="text-caption text-grey text-decoration-line-through">
+                        {{ formatPrice(book.listPrice) }} đ
+                    </div>
                 </div>
 
-                <div class="d-flex align-center mt-2">
+                <div class="d-flex align-center">
                     <v-rating :model-value="book.avgRating" readonly density="compact" half-increments color="warning"
                         size="16" />
-                    <span class="text-grey ms-2 text-caption">
+                    <span class="text-grey ms-1 text-caption">
                         ({{ book.avgRating }})
                     </span>
                 </div>

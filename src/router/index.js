@@ -1,4 +1,4 @@
-﻿import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
 import CustomerLayout from "@/layouts/CustomerLayout.vue";
 import BlankLayout from "@/layouts/BlankLayout.vue";
@@ -17,7 +17,11 @@ const router = createRouter({
           path: "login",
           name: "login",
           component: () => import("@/views/auth/LoginView.vue"),
-          // component: LoginView,
+        },
+        {
+          path: "register",
+          name: "register",
+          component: () => import("@/views/auth/RegisterView.vue"),
         },
       ],
     },
@@ -33,17 +37,15 @@ const router = createRouter({
           name: "home",
           component: () => import("@/views/customer/HomeView.vue"),
           meta: {
-            breadcrumb: "Trang chá»§",
+            breadcrumb: "Trang chủ",
           },
         },
         {
-          path: "",
-          alias: "/books",
+          path: "books",
           name: "books",
           component: () => import("@/views/customer/BookView.vue"),
           meta: {
-            requiresAuth: true,
-            breadcrumb: "Danh SaÌch SÃ¡ch",
+            breadcrumb: "Danh Sách Sách",
           },
         },
         {
@@ -51,8 +53,7 @@ const router = createRouter({
           name: "book-detail",
           component: () => import("@/views/customer/BookDetailView.vue"),
           meta: {
-            requiresAuth: true,
-            breadcrumb: "Chi tiáº¿t sÃ¡ch",
+            breadcrumb: "Chi tiết sách",
           },
         },
         {
@@ -77,6 +78,15 @@ const router = createRouter({
           component: () => import("@/views/customer/OrderHistoryView.vue"),
           meta: {
             requiresAuth: true,
+          },
+        },
+        {
+          path: "profile",
+          name: "profile",
+          component: () => import("@/views/customer/ProfileView.vue"),
+          meta: {
+            requiresAuth: true,
+            breadcrumb: "Hồ sơ cá nhân",
           },
         },
       ],
@@ -105,6 +115,24 @@ const router = createRouter({
             requiresAdmin: true,
           },
         },
+        {
+          path: "orders",
+          name: "admin-orders",
+          component: () => import("@/views/admin/OrderManagementView.vue"),
+          meta: {
+            requiresAuth: true,
+            requiresAdmin: true,
+          },
+        },
+        {
+          path: "genre",
+          name: "admin-genre",
+          component: () => import("@/views/admin/GenreManagementView.vue"),
+          meta: {
+            requiresAuth: true,
+            requiresAdmin: true,
+          },
+        },
       ],
     },
     {
@@ -119,7 +147,7 @@ router.beforeEach(async (to) => {
   const authStore = useAuthStore();
   const token = localStorage.getItem("token");
 
-  // CÃ³ token nhÆ°ng chÆ°a cÃ³ thÃ´ng tin user
+  // Có token nhưng chưa có thông tin user
   if (token && !authStore.userInfo) {
     await authStore.getUserProfile();
   }
@@ -129,16 +157,17 @@ router.beforeEach(async (to) => {
   }
 
   if (to.meta.requiresAdmin && !authStore.isAdmin) {
-    return { name: "/" };
+    return { name: "home" };
   }
 
-  // Redirect authenticated users away from login page
-  if (to.name === "login" && token && authStore.userInfo) {
+  // Redirect authenticated users away from login/register page
+  if ((to.name === "login" || to.name === "register") && token && authStore.userInfo) {
     if (authStore.isAdmin) {
       return { name: "dashboard" };
     } else {
-      return { name: "/" };
+      return { name: "home" };
     }
   }
 });
+
 export default router;
