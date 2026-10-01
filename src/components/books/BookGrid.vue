@@ -2,15 +2,15 @@
     <v-row>
         <!-- Loading -->
         <template v-if="loading">
-            <v-col v-for="i in 12" :key="i" cols="12" sm="6" md="4" lg="3">
+            <v-col v-for="i in 12" :key="i" cols="12" sm="6" md="3" lg="3" xl="3">
                 <v-skeleton-loader type="article" />
             </v-col>
         </template>
 
-        <!-- Danh sách sách -->
+        <!-- Danh sách sách: 4 cuốn / 1 dòng trên màn hình desktop (md="3" lg="3") -->
         <template v-else-if="books.length">
-            <v-col v-for="book in books" :key="book.id" cols="12" sm="6" md="3">
-                <BookCard :book="book" />
+            <v-col v-for="book in books" :key="book.id" cols="12" sm="6" md="3" lg="3" xl="3" class="d-flex">
+                <BookCard :book="book" class="w-100" />
             </v-col>
         </template>
 

@@ -46,6 +46,16 @@
                 </v-icon>
             </v-btn> -->
 
+            <!-- Wishlist -->
+            <v-btn icon variant="text" class="me-1" @click="handleWishlistClick">
+                <v-badge v-if="authStore.isLoggedIn && favoriteStore.totalFavorites > 0" location="top right" color="red"
+                    :content="favoriteStore.totalFavorites">
+                    <v-icon icon="mdi-heart-outline" />
+                </v-badge>
+                <v-icon v-else icon="mdi-heart-outline" />
+            </v-btn>
+
+            <!-- Cart -->
             <v-btn icon variant="text" @click="handleCartClick">
                 <v-badge v-if="authStore.isLoggedIn" location="top right" color="primary"
                     :content="useCart.totalQuantity">
@@ -86,9 +96,11 @@
                     </v-list-item> -->
 
                     
-                    <v-list-item title="Xem hồ sơ" @click="router.push('/profile')" />
-                    <v-list-item title="Lịch Sử Đơn Hàng" @click="router.push('/order-history')" />
-                    <v-list-item title="Đăng xuất" @click="authStore.logout()" />
+                    <v-list-item title="Xem hồ sơ" prepend-icon="mdi-account-outline" @click="router.push('/profile')" />
+                    <v-list-item title="Sách Yêu Thích" prepend-icon="mdi-heart-outline" @click="router.push('/wishlist')" />
+                    <v-list-item title="Lịch Sử Đơn Hàng" prepend-icon="mdi-clipboard-text-outline" @click="router.push('/order-history')" />
+                    <v-divider class="my-1" />
+                    <v-list-item title="Đăng xuất" prepend-icon="mdi-logout" color="red" @click="authStore.logout()" />
                 </v-list>
 
             </v-menu>
@@ -100,16 +112,28 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from "vue-router";
-import { watchEffect } from "vue";
+import { onMounted, watchEffect } from "vue";
 import { useCartStore } from '@/stores/cart.store';
+import { useFavoriteStore } from '@/stores/favorite.store';
+
 const router = useRouter()
 const authStore = useAuthStore()
 const useCart = useCartStore()
+const favoriteStore = useFavoriteStore()
 
 watchEffect(() => {
-    console.log("Header:", authStore.userInfo);
+    if (authStore.isLoggedIn) {
+        favoriteStore.fetchFavorites()
+    }
 });
 
+const handleWishlistClick = () => {
+    if (!authStore.isLoggedIn) {
+        router.push({ path: '/auth/login', query: { redirect: '/wishlist' } })
+        return
+    }
+    router.push('/wishlist')
+}
 
 const handleCartClick = () => {
     if (!authStore.isLoggedIn) {

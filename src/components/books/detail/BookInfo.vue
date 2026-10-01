@@ -174,8 +174,8 @@
       </div>
     </div>
 
-    <v-row dense class="mb-4">
-      <v-col cols="12" sm="6">
+    <v-row dense class="mb-4 align-center">
+      <v-col cols="12" sm="5">
         <v-btn
           block
           size="large"
@@ -189,7 +189,7 @@
           Thêm vào giỏ
         </v-btn>
       </v-col>
-      <v-col cols="12" sm="6">
+      <v-col cols="12" sm="5">
         <v-btn
           block
           size="large"
@@ -201,6 +201,20 @@
           @click="BuyNow"
         >
           Mua ngay
+        </v-btn>
+      </v-col>
+      <v-col cols="12" sm="2">
+        <v-btn
+          block
+          size="large"
+          variant="tonal"
+          :color="favoriteStore.isFavorite(props.book.id) ? 'red' : 'grey-darken-2'"
+          :prepend-icon="favoriteStore.isFavorite(props.book.id) ? 'mdi-heart' : 'mdi-heart-outline'"
+          class="font-weight-bold rounded-lg text-none"
+          title="Yêu thích"
+          @click="favoriteStore.toggleFavorite(props.book)"
+        >
+          <span class="d-sm-none ms-1">Yêu thích</span>
         </v-btn>
       </v-col>
     </v-row>
@@ -224,6 +238,9 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useFavoriteStore } from '@/stores/favorite.store';
+
+const favoriteStore = useFavoriteStore();
 
 const props = defineProps({
   book: {

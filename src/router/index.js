@@ -89,6 +89,15 @@ const router = createRouter({
             breadcrumb: "Hồ sơ cá nhân",
           },
         },
+        {
+          path: "wishlist",
+          name: "wishlist",
+          component: () => import("@/views/customer/WishlistView.vue"),
+          meta: {
+            requiresAuth: true,
+            breadcrumb: "Sách yêu thích",
+          },
+        },
       ],
     },
 
